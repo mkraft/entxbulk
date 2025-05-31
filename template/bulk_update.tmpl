@@ -22,9 +22,19 @@ type {{ $node.Name }}BulkUpdate struct {
 	{{- range $node.Fields }}
 	{{- if ne .Name "id" }}
 	{{- if eq (printf "%v" .Type.Type) "other" }}
-	{{ ToExported .Name }} *pgtype.Interval
+		{{- $sqlType := index $.Config.Annotations.TypeCast.TypeCasts (printf "%v" .Type.Ident) }}
+		{{- $goType := index $.Config.Annotations.GoTypeCast.GoTypes $sqlType }}
+		{{- if $goType }}
+			{{- if hasPrefix $goType "*" }}
+				{{ ToExported .Name }} {{ $goType }}
+			{{- else }}
+				{{ ToExported .Name }} *{{ $goType }}
+			{{- end }}
+		{{- else }}
+			{{ ToExported .Name }} *interface{}
+		{{- end }}
 	{{- else }}
-	{{ ToExported .Name }} *{{ .Type.Type }}
+		{{ ToExported .Name }} *{{ .Type.Type }}
 	{{- end }}
 	{{- end }}
 	{{- end }}

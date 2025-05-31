@@ -15,11 +15,18 @@ type Option func(*Extension)
 
 type Extension struct {
 	typeCasts map[string]string
+	goTypes   map[string]string
 }
 
 func WithTypeCasts(casts map[string]string) Option {
 	return func(e *Extension) {
 		e.typeCasts = casts
+	}
+}
+
+func WithGoTypes(goTypes map[string]string) Option {
+	return func(e *Extension) {
+		e.goTypes = goTypes
 	}
 }
 
@@ -38,6 +45,12 @@ type TypeCastAnnotation struct {
 }
 
 func (TypeCastAnnotation) Name() string { return "TypeCast" }
+
+type GoTypeCastAnnotation struct {
+	GoTypes map[string]string
+}
+
+func (GoTypeCastAnnotation) Name() string { return "GoTypeCast" }
 
 func (e Extension) Templates() []*gen.Template {
 	_, currentFile, _, _ := runtime.Caller(0)
@@ -68,6 +81,7 @@ func (e Extension) Templates() []*gen.Template {
 				}
 				return a
 			},
+			"hasPrefix": strings.HasPrefix,
 		}).
 		ParseFiles(templatePath)
 	if err != nil {
@@ -86,6 +100,7 @@ func (e Extension) Hooks() []gen.Hook {
 func (e Extension) Annotations() []entc.Annotation {
 	return []entc.Annotation{
 		TypeCastAnnotation{TypeCasts: e.typeCasts},
+		GoTypeCastAnnotation{GoTypes: e.goTypes},
 	}
 }
 
