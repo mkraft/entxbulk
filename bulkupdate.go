@@ -52,7 +52,14 @@ func (e Extension) Templates() []*gen.Template {
 				if s == "" {
 					return ""
 				}
-				return strings.Title(s)
+				// Convert snake_case to CamelCase
+				parts := strings.Split(s, "_")
+				for i, part := range parts {
+					if len(part) > 0 {
+						parts[i] = strings.ToUpper(part[:1]) + part[1:]
+					}
+				}
+				return strings.Join(parts, "")
 			},
 			"until": func(n int) []int {
 				a := make([]int, n)
