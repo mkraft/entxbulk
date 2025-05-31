@@ -67,20 +67,16 @@ func (c *Client) BulkUpdate{{ $node.Name }}s(ctx context.Context, updates []{{ $
 		params = append(params, u.ID)
 		paramIdx++
 		// then each field in order
-		for _, f := range fields {
-			{{- $cast := index $.TypeCasts (printf "%v" .Type.Type) -}}
-			placeholders = append(placeholders, fmt.Sprintf("$%d{{if $cast}}::{{$cast}}{{end}}", paramIdx))
-			if u.{{ ToExported .Name }} != nil {
-				{{- if eq (printf "%v" .Type.Type) "*pgtype.Interval" }}
-				params = append(params, *u.{{ ToExported .Name }})
-				{{- else }}
-				params = append(params, *u.{{ ToExported .Name }})
-				{{- end }}
-			} else {
-				params = append(params, nil)
-			}
-			paramIdx++
-		}
+		{{- range $node.Fields }}
+			{{- if ne .Name "id" }}
+				{{- $cast := index $.Config.Annotations.TypeCast.TypeCasts (printf "%v" .Type.Type) }}
+				if u.{{ ToExported .Name }} != nil {
+					placeholders = append(placeholders, fmt.Sprintf("$%d{{if $cast}}::{{$cast}}{{end}}", paramIdx))
+					params = append(params, *u.{{ ToExported .Name }})
+					paramIdx++
+				}
+			{{- end }}
+		{{- end }}
 		values = append(values, fmt.Sprintf("(%s)", strings.Join(placeholders, ", ")))
 	}
 

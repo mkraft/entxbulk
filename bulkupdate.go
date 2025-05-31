@@ -33,6 +33,12 @@ func NewExtension(opts ...Option) Extension {
 	return e
 }
 
+type TypeCastAnnotation struct {
+	TypeCasts map[string]string
+}
+
+func (TypeCastAnnotation) Name() string { return "TypeCast" }
+
 func (e Extension) Templates() []*gen.Template {
 	_, currentFile, _, _ := runtime.Caller(0)
 	dir := filepath.Dir(currentFile)
@@ -66,12 +72,14 @@ func (e Extension) Templates() []*gen.Template {
 	return []*gen.Template{t}
 }
 
-func (Extension) Hooks() []gen.Hook {
+func (e Extension) Hooks() []gen.Hook {
 	return nil
 }
 
-func (Extension) Annotations() []entc.Annotation {
-	return nil
+func (e Extension) Annotations() []entc.Annotation {
+	return []entc.Annotation{
+		TypeCastAnnotation{TypeCasts: e.typeCasts},
+	}
 }
 
 func (Extension) Options() []entc.Option {
