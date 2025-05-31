@@ -1,6 +1,6 @@
 # Entxbulk
 
-Adds a `BulkUpdate` method to Ent schema clients to perform multiple DB updates with a single SQL query.
+Adds a `BulkUpdate` method to Ent schema clients to perform multiple Postgres record updates with a single query.
 
 ## Example
 
