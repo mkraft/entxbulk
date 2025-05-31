@@ -30,7 +30,7 @@ type {{ $node.Name }}BulkUpdate struct {
 	{{- end }}
 }
 
-func (c *Client) BulkUpdate{{ $node.Name }}s(ctx context.Context, updates []{{ $node.Name }}BulkUpdate) error {
+func (c *{{ $node.Name }}Client) BulkUpdate(ctx context.Context, updates []{{ $node.Name }}BulkUpdate) error {
 	if len(updates) == 0 {
 		return nil
 	}
