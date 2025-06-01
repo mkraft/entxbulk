@@ -19,7 +19,11 @@ import (
 
 func TestBulkUpdateMethodGenerated(t *testing.T) {
 	bulkUpdateExtension := NewExtension()
-	err := entc.Generate("./ent/schema", &gen.Config{}, entc.Extensions(bulkUpdateExtension))
+	err := entc.Generate("./ent/schema", &gen.Config{
+		Features: []gen.Feature{
+			gen.FeatureExecQuery,
+		},
+	}, entc.Extensions(bulkUpdateExtension))
 	require.NoError(t, err)
 
 	// Check that file exists
