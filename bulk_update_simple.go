@@ -3,7 +3,6 @@ package entxbulk
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 
 	_ "github.com/lib/pq"
@@ -41,7 +40,6 @@ func BulkUpdateHubspotIDs(ctx context.Context, client *ent.Client, updates []Hub
 		}
 
 		batch := updates[i:end]
-		log.Printf("Processing batch of %d updates (offset: %d)", len(batch), i)
 
 		if err := processBatch(ctx, client, batch); err != nil {
 			return fmt.Errorf("error processing batch at offset %d: %w", i, err)
@@ -85,16 +83,10 @@ func processBatch(ctx context.Context, client *ent.Client, updates []HubspotUpda
 		entuser.FieldID,
 	)
 
-	result, err := client.ExecContext(ctx, query, params...)
+	_, err := client.ExecContext(ctx, query, params...)
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	log.Printf("Updated %d rows in batch", rowsAffected)
 	return nil
 }
