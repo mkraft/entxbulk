@@ -15,11 +15,7 @@ type HubspotUpdate struct {
 	HubspotID string
 }
 
-func BulkUpdateHubspotIDs(
-	ctx context.Context,
-	client *ent.Client,
-	updates []HubspotUpdate,
-) error {
+func BulkUpdateHubspotIDs(ctx context.Context, client *ent.Client, updates []HubspotUpdate) error {
 	if len(updates) == 0 {
 		return nil
 	}
