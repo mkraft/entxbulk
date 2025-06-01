@@ -3,12 +3,15 @@ package entxbulk
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	_ "github.com/lib/pq"
 	"github.com/mkraft/entxbulk/ent"
 	entuser "github.com/mkraft/entxbulk/ent/user"
 )
+
+const maxBatchSize = 1000
 
 type HubspotUpdate struct {
 	ID        int64
@@ -20,6 +23,35 @@ func BulkUpdateHubspotIDs(ctx context.Context, client *ent.Client, updates []Hub
 		return nil
 	}
 
+	// Input validation
+	for i, u := range updates {
+		if u.HubspotID == "" {
+			return fmt.Errorf("empty HubspotID at index %d", i)
+		}
+		if u.ID <= 0 {
+			return fmt.Errorf("invalid ID at index %d: %d", i, u.ID)
+		}
+	}
+
+	// Process in batches
+	for i := 0; i < len(updates); i += maxBatchSize {
+		end := i + maxBatchSize
+		if end > len(updates) {
+			end = len(updates)
+		}
+
+		batch := updates[i:end]
+		log.Printf("Processing batch of %d updates (offset: %d)", len(batch), i)
+
+		if err := processBatch(ctx, client, batch); err != nil {
+			return fmt.Errorf("error processing batch at offset %d: %w", i, err)
+		}
+	}
+
+	return nil
+}
+
+func processBatch(ctx context.Context, client *ent.Client, updates []HubspotUpdate) error {
 	var (
 		params     []interface{}
 		valueRows  []string
@@ -53,9 +85,16 @@ func BulkUpdateHubspotIDs(ctx context.Context, client *ent.Client, updates []Hub
 		entuser.FieldID,
 	)
 
-	if _, err := client.ExecContext(ctx, query, params...); err != nil {
+	result, err := client.ExecContext(ctx, query, params...)
+	if err != nil {
 		return err
 	}
 
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Updated %d rows in batch", rowsAffected)
 	return nil
 }
