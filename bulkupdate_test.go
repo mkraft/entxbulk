@@ -30,9 +30,11 @@ func TestBulkUpdateMethodGenerated(t *testing.T) {
 	require.Contains(t, string(buf), "func (c *UserClient) BulkUpdate")
 }
 
+// TestUserBulkUpdate_Postgres tests that Postgres accepts the generates SQL query.
+// This test relies on TestBulkUpdateMethodGenerated having run first for code generation.
 func TestUserBulkUpdate_Postgres(t *testing.T) {
 	ctx := context.Background()
-	client := startPostgresClient(t) // See helper below
+	client := startPostgresClient(t)
 	defer client.Close()
 
 	u1 := client.User.Create().SetHubspotID("old1").SaveX(ctx)
